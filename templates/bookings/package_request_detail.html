@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Package Request Details</h3>
+                    <div>
+                        {% if package_request.status == 'open' %}
+                            <span class="badge bg-success">{{ package_request.get_status_display }}</span>
+                        {% elif package_request.status == 'accepted' %}
+                            <span class="badge bg-primary">{{ package_request.get_status_display }}</span>
+                        {% else %}
+                            <span class="badge bg-danger">{{ package_request.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-geo-alt"></i> Origin</h5>
+                            <p>{{ package_request.origin }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-geo-alt-fill"></i> Destination</h5>
+                            <p>{{ package_request.destination }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-calendar-event"></i> Preferred Date</h5>
+                            <p>{{ package_request.preferred_date }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-currency-dollar"></i> Price Offer</h5>
+                            <p>${{ package_request.price_offer }}</p>
+                        </div>
+                    </div>
+                    
+                    <h5><i class="bi bi-box"></i> Package Information</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Description:</strong> {{ package_request.package_description }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Weight:</strong> {{ package_request.package_weight|floatformat:2 }} kg</p>
+                            <p><strong>Dimensions:</strong> {{ package_request.package_dimensions }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if package_request.special_instructions %}
+                        <div class="mb-3">
+                            <h5><i class="bi bi-exclamation-triangle"></i> Special Instructions</h5>
+                            <p>{{ package_request.special_instructions }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        {% if user.user_type == 'traveler' and package_request.status == 'open' %}
+                            <a href="{% url 'accept_package_request' pk=package_request.pk %}" class="btn btn-success">Accept Request</a>
+                        {% elif user == package_request.sender and package_request.status == 'open' %}
+                            <a href="{% url 'cancel_package_request' pk=package_request.pk %}" class="btn btn-danger">Cancel Request</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            {% if user.user_type == 'traveler' %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Sender Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            {% if package_request.sender.profile_picture %}
+                                <img src="{{ package_request.sender.profile_picture.url }}" alt="Profile Picture" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                            {% else %}
+                                <div class="bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-0">{{ package_request.sender.username }}</h5>
+                                <div class="text-muted">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= package_request.sender.average_rating|floatformat:"0" %}
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        {% elif forloop.counter <= package_request.sender.average_rating|add:"0.5"|floatformat:"0" %}
+                                            <i class="bi bi-star-half text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-1">{{ package_request.sender.average_rating|floatformat:1 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% if package_request.sender.is_verified %}
+                            <div class="mb-3">
+                                <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Verified User</span>
+                            </div>
+                        {% endif %}
+                        <a href="{% url 'profile_detail' pk=package_request.sender.pk %}" class="btn btn-outline-primary btn-sm">View Profile</a>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="card">
+                <div class="card-header">
+                    <h4>Timeline</h4>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Request Created</h6>
+                                <p class="timeline-date">{{ package_request.created_at|date:"M d, Y - g:i a" }}</p>
+                            </div>
+                        </div>
+                        {% if package_request.status != 'open' %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker {% if package_request.status == 'accepted' %}bg-primary{% else %}bg-danger{% endif %}"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Request {{ package_request.get_status_display }}</h6>
+                                    <p class="timeline-date">{{ package_request.updated_at|date:"M d, Y - g:i a" }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+}
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-top: 3px;
+}
+.timeline-content {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+.timeline-title {
+    margin-bottom: 5px;
+}
+.timeline-date {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}

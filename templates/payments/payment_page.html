@@ -1,0 +1,545 @@
+<!-- templates/payments/payment_page.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Payment - FlyNCarry{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .payment-header {
+        background: linear-gradient(135deg, #4361ee 0%, #3a56d4 100%);
+        color: white;
+        border-radius: var(--border-radius);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(67, 97, 238, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payment-header::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 1;
+    }
+
+    .payment-header::after {
+        content: "";
+        position: absolute;
+        bottom: -80px;
+        left: -80px;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        z-index: 1;
+    }
+
+    .payment-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .payment-icon {
+        width: 48px;
+        height: 48px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+
+    .payment-info {
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        padding-top: 1rem;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .payment-detail {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .payment-value {
+        font-weight: 600;
+    }
+
+    .payment-cards {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        transition: var(--transition);
+    }
+
+    .payment-form-container {
+        padding: 2rem;
+    }
+
+    .card-input-container {
+        position: relative;
+    }
+
+    .card-brand-icon {
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        transform: translateY(-50%);
+        font-size: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .summary-container {
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+    }
+
+    .summary-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .summary-label {
+        color: #6c757d;
+    }
+
+    .summary-value {
+        font-weight: 500;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1.5rem;
+        padding: 0.5rem;
+        background-color: rgba(76, 201, 240, 0.1);
+        border-radius: var(--border-radius);
+        color: #4cc9f0;
+    }
+
+    .credit-cards {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .credit-card-icon {
+        font-size: 2rem;
+        color: #6c757d;
+        opacity: 0.5;
+    }
+
+    .card-preview {
+        background: linear-gradient(135deg, #4361ee 0%, #3a56d4 100%);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
+        margin-bottom: 1.5rem;
+        min-height: 200px;
+    }
+
+    .card-chip {
+        width: 40px;
+        height: 30px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 5px;
+        margin-bottom: 1rem;
+    }
+
+    .card-number-preview {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-holder-preview {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .card-detail-label {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        margin-bottom: 0.25rem;
+    }
+
+    .card-brand-logo {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        font-size: 2rem;
+        opacity: 0.8;
+    }
+
+    .escrow-info {
+        background-color: rgba(76, 175, 80, 0.1);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .escrow-icon {
+        color: #4caf50;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .escrow-text {
+        font-size: 0.9rem;
+        color: #4d4d4d;
+    }
+
+    .spinner {
+        display: none;
+        width: 25px;
+        height: 25px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spinner 1s ease-in-out infinite;
+    }
+
+    @keyframes spinner {
+        to { transform: rotate(360deg); }
+    }
+
+    .btn-pay:disabled {
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 payment-container">
+    <!-- Payment Header -->
+    <div class="payment-header animate__animated animate__fadeIn">
+        <div class="payment-title">
+            <div class="payment-icon">
+                <i class="bi bi-credit-card fs-4"></i>
+            </div>
+            <div>
+                <h2 class="mb-0">Complete Your Payment</h2>
+                <p class="mb-0">Securely pay for your booking</p>
+            </div>
+        </div>
+
+        <div class="payment-info">
+            <div class="payment-detail">
+                <span>Booking ID:</span>
+                <span class="payment-value">{{ booking.id|truncatechars:8 }}</span>
+            </div>
+            <div class="payment-detail">
+                <span>Route:</span>
+                <span class="payment-value">{{ booking.itinerary.origin }} to {{ booking.itinerary.destination }}</span>
+            </div>
+            <div class="payment-detail">
+                <span>Departure:</span>
+                <span class="payment-value">{{ booking.itinerary.departure_date|date:"F j, Y" }}</span>
+            </div>
+            <div class="payment-detail">
+                <span>Amount:</span>
+                <span class="payment-value">${{ booking.price }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column - Payment Form -->
+        <div class="col-lg-8 animate__animated animate__fadeInUp">
+            <div class="card payment-cards">
+                <div class="card-body payment-form-container">
+                    <!-- Credit Card Preview -->
+                    <div class="card-preview">
+                        <div class="card-chip"></div>
+                        <div class="card-number-preview">
+                            <span id="preview-part1">•••• ••••</span>
+                            <span id="preview-part2">•••• ••••</span>
+                        </div>
+                        <div class="card-holder-preview">
+                            <div>
+                                <div class="card-detail-label">CARD HOLDER</div>
+                                <div id="preview-name">Your Name</div>
+                            </div>
+                            <div>
+                                <div class="card-detail-label">EXPIRES</div>
+                                <div id="preview-expiry">MM/YY</div>
+                            </div>
+                        </div>
+                        <div class="card-brand-logo">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-4">Payment Information</h5>
+
+                    <div class="alert alert-info">
+                        <div class="d-flex gap-2 align-items-center">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <div>
+                                <strong>Test Mode:</strong> Use card number <strong>5528790000000008</strong>, any future expiry date, and any 3-digit CVC.
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" id="payment-form">
+                        {% csrf_token %}
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label">Card Number</label>
+                                <div class="card-input-container">
+                                    <input type="text" name="card_number" id="id_card_number" class="form-control" placeholder="5528 7900 0000 0008" required>
+                                    <div class="card-brand-icon">
+                                        <i class="bi bi-credit-card" id="card-brand"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Month</label>
+                                <select name="expiry_month" id="id_expiry_month" class="form-select" required>
+                                    {% for i in "123456789" %}
+                                        <option value="0{{ i }}">0{{ i }}</option>
+                                    {% endfor %}
+                                    {% for i in "012" %}
+                                        <option value="1{{ i }}">1{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Year</label>
+                                <select name="expiry_year" id="id_expiry_year" class="form-select" required>
+                                    {% for i in "56789" %}
+                                        <option value="202{{ i }}">202{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">CVC</label>
+                                <input type="text" name="cvc" id="id_cvc" class="form-control" placeholder="123" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Name on Card</label>
+                            <input type="text" name="name_on_card" id="id_name_on_card" class="form-control" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 btn-pay" id="submit-button">
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <span>Pay ${{ booking.price }}</span>
+                                <div class="spinner" id="spinner"></div>
+                            </div>
+                        </button>
+
+                        <div class="credit-cards">
+                            <i class="bi bi-credit-card credit-card-icon"></i>
+                            <i class="bi bi-credit-card-2-front credit-card-icon"></i>
+                            <i class="bi bi-credit-card-2-back credit-card-icon"></i>
+                        </div>
+
+                        <div class="secure-badge">
+                            <i class="bi bi-shield-check me-2"></i>
+                            <span>Payments are processed securely</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Payment Summary -->
+        <div class="col-lg-4 animate__animated animate__fadeInUp animate__delay-1s">
+            <div class="card payment-cards">
+                <div class="card-body">
+                    <div class="summary-container">
+                        <h5 class="summary-title">Payment Summary</h5>
+
+                        <div class="summary-row">
+                            <span class="summary-label">Package Weight</span>
+                            <span class="summary-value">{{ booking.package_weight }} kg</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span class="summary-label">Price per kg</span>
+                            <span class="summary-value">${{ booking.price|floatformat:2 }}</span>
+                        </div>
+
+                        <div class="summary-total">
+                            <span>Total Amount</span>
+                            <span>${{ booking.price|floatformat:2 }}</span>
+                        </div>
+                    </div>
+
+                    <div class="escrow-info">
+                        <div class="escrow-icon">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <div class="escrow-text">
+                            <strong>Secure Escrow Payment</strong>
+                            <p class="mb-0">Your payment will be held securely in escrow and only released to the traveler after you confirm successful delivery of your package.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6>Booking Details</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Origin:</span>
+                            <span class="fw-medium">{{ booking.itinerary.origin }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Destination:</span>
+                            <span class="fw-medium">{{ booking.itinerary.destination }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Departure:</span>
+                            <span class="fw-medium">{{ booking.itinerary.departure_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Traveler:</span>
+                            <span class="fw-medium">{{ booking.itinerary.traveler.username }}</span>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'booking_detail' pk=booking.pk %}" class="btn btn-outline-secondary w-100 mt-3">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Booking
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('payment-form');
+        const submitButton = document.getElementById('submit-button');
+        const spinner = document.getElementById('spinner');
+
+        // Card number input formatting and validation
+        const cardNumberInput = document.getElementById('id_card_number');
+        const cardBrandIcon = document.getElementById('card-brand');
+        const previewPart1 = document.getElementById('preview-part1');
+        const previewPart2 = document.getElementById('preview-part2');
+        const previewName = document.getElementById('preview-name');
+        const previewExpiry = document.getElementById('preview-expiry');
+        const nameInput = document.getElementById('id_name_on_card');
+        const expiryMonthInput = document.getElementById('id_expiry_month');
+        const expiryYearInput = document.getElementById('id_expiry_year');
+
+        // Format card number with spaces
+        cardNumberInput.addEventListener('input', function(e) {
+            // Remove any non-digits
+            let value = this.value.replace(/\D/g, '');
+
+            // Add spaces after every 4 digits
+            value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+
+            // Limit to 19 characters (16 digits + 3 spaces)
+            value = value.substring(0, 19);
+
+            // Update the input value
+            this.value = value;
+
+            // Update card preview
+            if (value.length > 0) {
+                const parts = value.split(' ');
+                if (parts.length > 0) {
+                    previewPart1.textContent = parts[0] + (parts.length > 1 ? ' ' + parts[1] : '');
+                    previewPart2.textContent = (parts.length > 2 ? parts[2] + (parts.length > 3 ? ' ' + parts[3] : '') : '•••• ••••');
+                }
+
+                // Detect card brand (simplified)
+                if (value.startsWith('4')) {
+                    cardBrandIcon.className = 'bi bi-credit-card';
+                } else if (value.startsWith('5')) {
+                    cardBrandIcon.className = 'bi bi-credit-card-2-front';
+                } else if (value.startsWith('3')) {
+                    cardBrandIcon.className = 'bi bi-credit-card-2-back';
+                } else {
+                    cardBrandIcon.className = 'bi bi-credit-card';
+                }
+            } else {
+                previewPart1.textContent = '•••• ••••';
+                previewPart2.textContent = '•••• ••••';
+                cardBrandIcon.className = 'bi bi-credit-card';
+            }
+        });
+
+        // Update card preview for name
+        nameInput.addEventListener('input', function() {
+            previewName.textContent = this.value || 'Your Name';
+        });
+
+        // Update card preview for expiry date
+        function updateExpiryPreview() {
+            const month = expiryMonthInput.value;
+            const year = expiryYearInput.value.slice(-2);
+            previewExpiry.textContent = month + '/' + year;
+        }
+
+        expiryMonthInput.addEventListener('change', updateExpiryPreview);
+        expiryYearInput.addEventListener('change', updateExpiryPreview);
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            // Show spinner and disable button
+            submitButton.disabled = true;
+            spinner.style.display = 'block';
+
+            // The 3D Secure form will be handled by the server
+            // which will return HTML that redirects to the bank's authentication page
+        });
+    });
+</script>
+{% endblock %}

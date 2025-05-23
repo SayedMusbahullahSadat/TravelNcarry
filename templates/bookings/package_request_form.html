@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Create Package Request</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <h5>Delivery Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.origin|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.destination|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.preferred_date|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.price_offer|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <h5>Package Information</h5>
+                        {{ form.package_description|as_crispy_field }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.package_weight|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.package_dimensions|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        {{ form.special_instructions|as_crispy_field }}
+                        
+                        <div class="alert alert-info">
+                            <p>Your package request will be visible to all travelers. When a traveler accepts your request, you'll be notified.</p>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Create Package Request</button>
+                            <a href="{% url 'package_request_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

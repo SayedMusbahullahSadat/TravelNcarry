@@ -1,0 +1,193 @@
+<!-- templates/admin_dashboard/user_detail.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>User Details: {{ user_detail.username }}</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'admin_user_management' %}" class="btn btn-primary">Back to User List</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if user_detail.profile_picture %}
+                            <img src="{{ user_detail.profile_picture.url }}" alt="Profile Picture" class="rounded-circle" style="width: 120px; height: 120px;">
+                        {% else %}
+                            <div class="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                                <i class="bi bi-person" style="font-size: 3rem;"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <p><strong>Username:</strong> {{ user_detail.username }}</p>
+                        <p><strong>Email:</strong> {{ user_detail.email }}</p>
+                        <p><strong>User Type:</strong> {{ user_detail.get_user_type_display }}</p>
+                        <p><strong>Verified:</strong>
+                            {% if user_detail.is_verified %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Date Joined:</strong> {{ user_detail.date_joined|date:"F j, Y" }}</p>
+                        <p><strong>Last Login:</strong> {{ user_detail.last_login|date:"F j, Y" }}</p>
+                    </div>
+
+                    <a href="{% url 'admin_toggle_user_verification' user_id=user_detail.id %}" class="btn btn-outline-primary w-100">
+                        {% if user_detail.is_verified %}
+                            <i class="bi bi-x-circle"></i> Unverify User
+                        {% else %}
+                            <i class="bi bi-check-circle"></i> Verify User
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Additional Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Phone:</strong> {{ user_detail.phone_number|default:"Not provided" }}</p>
+                    <p><strong>Address:</strong> {{ user_detail.address|default:"Not provided" }}</p>
+                    <p><strong>Average Rating:</strong> {{ user_detail.average_rating|floatformat:1 }} / 5.0</p>
+                    {% if user_detail.bio %}
+                        <p><strong>Bio:</strong> {{ user_detail.bio }}</p>
+                    {% else %}
+                        <p><strong>Bio:</strong> Not provided</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Activity Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        {% if user_detail.user_type == 'traveler' %}
+                            <div class="col-md-4">
+                                <h2>{{ itineraries|length }}</h2>
+                                <p>Itineraries</p>
+                            </div>
+                        {% endif %}
+                        <div class="col-md-4">
+                            <h2>{{ bookings|length }}</h2>
+                            <p>Bookings</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h2>{{ payments|length }}</h2>
+                            <p>Payments</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if user_detail.user_type == 'traveler' %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Itineraries</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Origin</th>
+                                        <th>Destination</th>
+                                        <th>Departure</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for itinerary in itineraries %}
+                                        <tr>
+                                            <td>{{ itinerary.origin }}</td>
+                                            <td>{{ itinerary.destination }}</td>
+                                            <td>{{ itinerary.departure_date }}</td>
+                                            <td>
+                                                {% if itinerary.status == 'active' %}
+                                                    <span class="badge bg-success">{{ itinerary.get_status_display }}</span>
+                                                {% elif itinerary.status == 'completed' %}
+                                                    <span class="badge bg-info">{{ itinerary.get_status_display }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ itinerary.get_status_display }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center">No itineraries found.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Bookings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Route</th>
+                                    <th>Status</th>
+                                    <th>Price</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in bookings %}
+                                    <tr>
+                                        <td>{{ booking.id|truncatechars:8 }}</td>
+                                        <td>{{ booking.itinerary.origin }} to {{ booking.itinerary.destination }}</td>
+                                        <td>
+                                            {% if booking.status == 'pending' %}
+                                                <span class="badge bg-warning">{{ booking.get_status_display }}</span>
+                                            {% elif booking.status == 'confirmed' %}
+                                                <span class="badge bg-primary">{{ booking.get_status_display }}</span>
+                                            {% elif booking.status == 'in_transit' %}
+                                                <span class="badge bg-info">{{ booking.get_status_display }}</span>
+                                            {% elif booking.status == 'delivered' %}
+                                                <span class="badge bg-success">{{ booking.get_status_display }}</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ booking.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>${{ booking.price }}</td>
+                                        <td>{{ booking.created_at|date:"M d, Y" }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No bookings found.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

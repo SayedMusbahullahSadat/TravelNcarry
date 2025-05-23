@@ -1,0 +1,151 @@
+<!-- templates/admin_dashboard/reports.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>System Reports</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">User Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>Total Users</th>
+                                    <td>{{ user_stats.total }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Travelers</th>
+                                    <td>{{ user_stats.travelers }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Senders</th>
+                                    <td>{{ user_stats.senders }}</td>
+                                </tr>
+                                <tr>
+                                    <th>New Users (Last 30 Days)</th>
+                                    <td>{{ user_stats.new_30_days }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Payment Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>Total Payments</th>
+                                    <td>${{ payment_stats.total_amount|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Average Payment</th>
+                                    <td>${{ payment_stats.average_amount|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Payments (Last 30 Days)</th>
+                                    <td>${{ payment_stats.total_30_days|floatformat:2 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Booking Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>Total Bookings</th>
+                                    <td>{{ booking_stats.total }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Pending</th>
+                                    <td>{{ booking_stats.pending }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Confirmed</th>
+                                    <td>{{ booking_stats.confirmed }}</td>
+                                </tr>
+                                <tr>
+                                    <th>In Transit</th>
+                                    <td>{{ booking_stats.in_transit }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Delivered</th>
+                                    <td>{{ booking_stats.delivered }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Cancelled</th>
+                                    <td>{{ booking_stats.cancelled }}</td>
+                                </tr>
+                                <tr>
+                                    <th>New Bookings (Last 30 Days)</th>
+                                    <td>{{ booking_stats.new_30_days }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Popular Routes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Origin</th>
+                                    <th>Destination</th>
+                                    <th>Bookings</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for route in popular_routes %}
+                                    <tr>
+                                        <td>{{ route.origin }}</td>
+                                        <td>{{ route.destination }}</td>
+                                        <td>{{ route.count }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">No data available.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

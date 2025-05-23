@@ -1,0 +1,118 @@
+<!-- templates/admin_dashboard/system_settings.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load admin_filters %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>System Settings</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Edit Settings</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <h5 class="mb-3">Pricing Tiers</h5>
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        {{ form.base_price_per_kg|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.tier1_max_weight|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.tier1_price_per_kg|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        {{ form.tier2_max_weight|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.tier2_price_per_kg|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.tier3_price_per_kg|as_crispy_field }}
+                    </div>
+                </div>
+
+                <h5 class="mb-3">Platform Fees</h5>
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        {{ form.platform_fee_percentage|as_crispy_field }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </div>
+        <div class="card-footer">
+            <p class="text-muted mb-0">Last updated: {{ settings.updated_at|date:"F j, Y, g:i a" }}</p>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Pricing Preview</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Tier 1: Up to {{ settings.tier1_max_weight }} kg</h6>
+                    <p>${{ settings.tier1_price_per_kg }} per kg</p>
+                    <hr>
+                    <h6>Tier 2: {{ settings.tier1_max_weight }} kg to {{ settings.tier2_max_weight }} kg</h6>
+                    <p>${{ settings.tier2_price_per_kg }} per kg</p>
+                    <hr>
+                    <h6>Tier 3: Above {{ settings.tier2_max_weight }} kg</h6>
+                    <p>${{ settings.tier3_price_per_kg }} per kg</p>
+                </div>
+                <div class="col-md-6">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Weight (kg)</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1 kg</td>
+                                <td>${{ settings.tier1_price_per_kg }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ settings.tier1_max_weight }} kg</td>
+                                <td>${{ settings.tier1_max_weight|floatformat:0|default:"0" }} × ${{ settings.tier1_price_per_kg }} = ${{ settings.tier1_max_weight|multiply:settings.tier1_price_per_kg|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ settings.tier2_max_weight }} kg</td>
+                                <td>
+                                    {% with tier1_total=settings.tier1_max_weight|multiply:settings.tier1_price_per_kg %}
+                                    {% with tier2_diff=settings.tier2_max_weight|subtract:settings.tier1_max_weight %}
+                                    {% with tier2_amount=tier2_diff|multiply:settings.tier2_price_per_kg %}
+                                    ${{ tier1_total|floatformat:2 }} + (${{ settings.tier2_price_per_kg }} × {{ tier2_diff|floatformat:0 }} kg) = ${{ tier1_total|add:tier2_amount|floatformat:2 }}
+                                    {% endwith %}
+                                    {% endwith %}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p><strong>Platform Fee:</strong> {{ settings.platform_fee_percentage }}% of total amount</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

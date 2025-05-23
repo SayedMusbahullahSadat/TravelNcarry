@@ -1,0 +1,940 @@
+<!-- templates/itineraries/itinerary_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Find Itineraries - FlyNCarry{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --accent-color: #f72585;
+        --secondary-color: #4cc9f0;
+        --success-color: #4caf50;
+        --warning-color: #ff9800;
+        --danger-color: #f44336;
+        --light-gray: #f8f9fa;
+        --dark-gray: #343a40;
+        --border-radius: 0.5rem;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #3a56d4 100%);
+        color: white;
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .search-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        margin-bottom: 1.5rem;
+        border: none;
+    }
+
+    .filters-sidebar {
+        border-radius: var(--border-radius);
+        border: none;
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+
+    .filter-section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .filter-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .filter-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-icon {
+        color: var(--primary-color);
+        margin-right: 0.5rem;
+    }
+
+    .itinerary-card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .itinerary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .route-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .route-separator {
+        flex-grow: 1;
+        height: 2px;
+        background-color: #e9ecef;
+        margin: 0 0.5rem;
+        position: relative;
+    }
+
+    .route-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .traveler-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-gray);
+        font-weight: 600;
+        font-size: 1.2rem;
+        overflow: hidden;
+    }
+
+    .traveler-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .capacity-container {
+        margin-top: 1rem;
+    }
+
+    .view-controls {
+        background-color: white;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .view-toggle {
+        display: flex;
+        align-items: center;
+    }
+
+    .view-button {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--border-radius);
+        color: #6c757d;
+        background-color: transparent;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+        margin-left: 0.5rem;
+    }
+
+    .view-button.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .table-view {
+        background-color: white;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .empty-state {
+        background-color: white;
+        border-radius: var(--border-radius);
+        padding: 3rem;
+        text-align: center;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .applied-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background-color: rgba(67, 97, 238, 0.1);
+        border-radius: 50px;
+        color: var(--primary-color);
+        font-size: 0.9rem;
+    }
+
+    .filter-badge .close {
+        margin-left: 0.5rem;
+        font-size: 1rem;
+        line-height: 1;
+        color: var(--primary-color);
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+    .filter-badge .close:hover {
+        opacity: 1;
+    }
+
+    .save-search-form {
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 992px) {
+        .filters-sidebar {
+            position: relative;
+            top: 0;
+            margin-bottom: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h2 class="mb-2"><i class="bi bi-search me-2"></i>Find Itineraries</h2>
+        <p class="mb-0">Search for travelers going your way who can carry your packages</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Search Form Card -->
+    <div class="search-card">
+        <div class="card-body p-3">
+            <form method="get" id="search-form" class="mb-0">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium">From</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                            <input type="text" name="origin" id="id_origin" value="{{ search_form.origin.value|default:'' }}" placeholder="City or country of origin" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium">To</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
+                            <input type="text" name="destination" id="id_destination" value="{{ search_form.destination.value|default:'' }}" placeholder="City or country of destination" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">When</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                            <input type="date" name="departure_date_from" id="id_departure_date_from" value="{{ search_form.departure_date_from.value|default:'' }}" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Advanced Options (hidden fields) -->
+                <input type="hidden" name="departure_date_to" id="id_departure_date_to" value="{{ search_form.departure_date_to.value|default:'' }}">
+                <input type="hidden" name="min_capacity" id="hidden_min_capacity" value="{{ search_form.min_capacity.value|default:'' }}">
+                <input type="hidden" name="max_capacity" id="hidden_max_capacity" value="{{ search_form.max_capacity.value|default:'' }}">
+                <input type="hidden" name="min_price" id="hidden_min_price" value="{{ search_form.min_price.value|default:'' }}">
+                <input type="hidden" name="max_price" id="hidden_max_price" value="{{ search_form.max_price.value|default:'' }}">
+                <input type="hidden" name="min_rating" id="hidden_min_rating" value="{{ search_form.min_rating.value|default:'' }}">
+                <input type="hidden" name="verified_only" id="hidden_verified_only" value="{{ search_form.verified_only.value|default:'' }}">
+                <input type="hidden" name="sort_by" id="hidden_sort_by" value="{{ search_form.sort_by.value|default:'departure_date' }}">
+            </form>
+        </div>
+    </div>
+
+    <!-- Applied Filters -->
+    {% if applied_filters %}
+    <div class="applied-filters">
+        {% for key, value in applied_filters.items %}
+        <div class="filter-badge">
+            <span>{{ key|title }}: {{ value }}</span>
+            <a href="?{% for k, v in request.GET.items %}{% if k != key and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}" class="close" aria-label="Remove filter">
+                <i class="bi bi-x"></i>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Save Search Form -->
+    {% if user.is_authenticated and request.GET %}
+    <div class="save-search-form">
+        <form method="post" action="{% url 'save_search' %}" class="row g-3 align-items-center">
+            {% csrf_token %}
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-bookmark-plus"></i></span>
+                    <input type="text" class="form-control" id="search_name" name="search_name" placeholder="Name for this search" required>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="notify" name="notify">
+                    <label class="form-check-label" for="notify">
+                        Notify me of new matches
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-save me-1"></i> Save Search
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Left Sidebar - Filters -->
+        <div class="col-lg-3">
+            <div class="card filters-sidebar">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Filters</h5>
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="p-3 border-bottom bg-light">
+                    <a href="{% url 'saved_searches' %}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-bookmark me-1"></i> View Saved Searches
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="card-body">
+                    <!-- Capacity Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-box-seam filter-icon"></i> Package Details
+                        </h6>
+
+                        <div class="mb-3">
+                            <label class="form-label">Capacity Needed (kg)</label>
+                            <div class="input-group input-group-sm mb-2">
+                                <input type="number" id="min_capacity" class="form-control" min="0" step="0.5" placeholder="Min" value="{{ search_form.min_capacity.value|default:'' }}">
+                                <span class="input-group-text">-</span>
+                                <input type="number" id="max_capacity" class="form-control" min="0" step="0.5" placeholder="Max" value="{{ search_form.max_capacity.value|default:'' }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Price Range ($)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" id="min_price" class="form-control" min="0" step="1" placeholder="Min" value="{{ search_form.min_price.value|default:'' }}">
+                                <span class="input-group-text">-</span>
+                                <input type="number" id="max_price" class="form-control" min="0" step="1" placeholder="Max" value="{{ search_form.max_price.value|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Traveler Filters -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-person-fill filter-icon"></i> Traveler Filters
+                        </h6>
+
+                        <div class="mb-3">
+                            <label class="form-label">Minimum Rating</label>
+                            <select id="min_rating" class="form-select form-select-sm">
+                                <option value="">Any Rating</option>
+                                {% for i in "12345" %}
+                                    <option value="{{ i }}" {% if search_form.min_rating.value == i %}selected{% endif %}>{{ i }}+ Stars</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="verified_only" {% if search_form.verified_only.value %}checked{% endif %}>
+                            <label class="form-check-label" for="verified_only">Verified travelers only</label>
+                        </div>
+                    </div>
+
+                    <!-- Apply Filters Button -->
+                    <button id="apply-filters" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel-fill me-2"></i>Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Content - Itinerary Results -->
+        <div class="col-lg-9">
+            {% if itineraries %}
+            <!-- Results Controls -->
+            <div class="view-controls d-flex justify-content-between align-items-center">
+                <div class="results-info">
+                    <strong class="results-count">{{ paginator.count }}</strong> itineraries found
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <label class="me-2 text-muted">Sort by:</label>
+                        <select id="sort_by" class="form-select form-select-sm d-inline-block" style="width: auto; padding-right: 2rem;">
+                            <option value="departure_date" {% if search_form.sort_by.value == 'departure_date' %}selected{% endif %}>Earliest Departure</option>
+                            <option value="-departure_date" {% if search_form.sort_by.value == '-departure_date' %}selected{% endif %}>Latest Departure</option>
+                            <option value="-traveler__average_rating" {% if search_form.sort_by.value == '-traveler__average_rating' %}selected{% endif %}>Highest Rating</option>
+                        </select>
+                    </div>
+                    <div class="view-toggle">
+                        <button type="button" class="view-button active" id="grid-view" title="Grid view">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </button>
+                        <button type="button" class="view-button" id="list-view" title="List view">
+                            <i class="bi bi-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid View (Default) -->
+            <div id="grid-view-container" class="row g-4 mt-2">
+                {% for itinerary in itineraries %}
+                <div class="col-lg-6 mb-3">
+                    <div class="card itinerary-card h-100">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        {% if itinerary.traveler.is_verified %}
+                                            <span class="badge bg-success me-3"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                                        {% endif %}
+                                        <div class="text-center">
+                                            <div class="badge bg-primary">{{ itinerary.departure_date|date:"M d" }}</div>
+                                            <div class="small text-muted">{{ itinerary.departure_time|time:"g:i A" }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="badge bg-primary">{{ itinerary.arrival_date|date:"M d" }}</div>
+                                        <div class="small text-muted">{{ itinerary.arrival_time|time:"g:i A" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <h5 class="card-title mb-3">
+                                <div class="route-info">
+                                    <div class="fw-bold">{{ itinerary.origin }}</div>
+                                    <div class="route-separator">
+                                        <div class="route-icon">
+                                            <i class="bi bi-airplane-fill"></i>
+                                        </div>
+                                    </div>
+                                    <div class="fw-bold">{{ itinerary.destination }}</div>
+                                </div>
+                            </h5>
+
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="traveler-avatar me-2">
+                                    {% if itinerary.traveler.profile_picture %}
+                                        <img src="{{ itinerary.traveler.profile_picture.url }}" alt="{{ itinerary.traveler.username }}">
+                                    {% else %}
+                                        {{ itinerary.traveler.username|slice:":1" }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="fw-medium">{{ itinerary.traveler.username }}</div>
+                                    <div class="text-warning small">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= itinerary.traveler.average_rating|floatformat:"0" %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% elif forloop.counter <= itinerary.traveler.average_rating|add:"0.5"|floatformat:"0" %}
+                                                <i class="bi bi-star-half"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="text-muted ms-1">{{ itinerary.traveler.average_rating|floatformat:1 }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row align-items-center">
+                                <div class="col-7">
+                                    <div class="fw-medium mb-1">Capacity</div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ itinerary.used_capacity_percent }}%;" aria-valuenow="{{ itinerary.used_capacity_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-1 small text-muted">
+                                        <span>{{ itinerary.available_capacity|floatformat:2 }} kg available</span>
+                                        <span>{{ itinerary.capacity_kg|floatformat:2 }} kg total</span>
+                                    </div>
+                                </div>
+                                <div class="col-5 text-end">
+                                    <div class="text-muted small">Estimated price</div>
+                                    <div class="fs-5 fw-bold text-primary">$10.00/kg</div>
+                                    <a href="{% url 'itinerary_detail' pk=itinerary.pk %}" class="btn btn-sm btn-primary mt-2 w-100">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- List View (Hidden by default) -->
+            <div id="list-view-container" class="mt-2" style="display: none;">
+                <div class="table-view">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Route</th>
+                                    <th>Dates</th>
+                                    <th>Traveler</th>
+                                    <th>Capacity</th>
+                                    <th>Price</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for itinerary in itineraries %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-medium">{{ itinerary.origin }} to {{ itinerary.destination }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-between align-items-center" style="min-width: 160px;">
+                                            <div class="text-center">
+                                                <div class="badge bg-primary">{{ itinerary.departure_date|date:"M d" }}</div>
+                                                <div class="small text-muted">{{ itinerary.departure_time|time:"g:i A" }}</div>
+                                            </div>
+                                            <div class="text-center px-2">
+                                                <i class="bi bi-arrow-right text-muted"></i>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="badge bg-primary">{{ itinerary.arrival_date|date:"M d" }}</div>
+                                                <div class="small text-muted">{{ itinerary.arrival_time|time:"g:i A" }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="traveler-avatar me-2" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                                                {% if itinerary.traveler.profile_picture %}
+                                                    <img src="{{ itinerary.traveler.profile_picture.url }}" alt="{{ itinerary.traveler.username }}">
+                                                {% else %}
+                                                    {{ itinerary.traveler.username|slice:":1" }}
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ itinerary.traveler.username }}</div>
+                                                <div class="text-warning" style="font-size: 0.7rem; min-height: 16px; display: flex; align-items: center;">
+                                                    {% for i in "12345" %}
+                                                        {% if forloop.counter <= itinerary.traveler.average_rating|floatformat:"0" %}
+                                                            <i class="bi bi-star-fill"></i>
+                                                        {% elif forloop.counter <= itinerary.traveler.average_rating|add:"0.5"|floatformat:"0" %}
+                                                            <i class="bi bi-star-half"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-star"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 8px; width: 100px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ itinerary.used_capacity_percent }}%;" aria-valuenow="{{ itinerary.used_capacity_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="small mt-1">
+                                            {{ itinerary.available_capacity|floatformat:2 }}/{{ itinerary.capacity_kg|floatformat:2 }} kg
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-primary">$10.00</div>
+                                        <div class="small text-muted">per kg</div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'itinerary_detail' pk=itinerary.pk %}" class="btn btn-sm btn-primary">
+                                            View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Package Requests Section -->
+            {% if package_requests %}
+            <div class="mt-5 animate__animated animate__fadeIn">
+                <h4 class="mb-3"><i class="bi bi-box-seam me-2"></i>Package Requests</h4>
+                <p class="text-muted mb-4">These are senders looking for travelers on similar routes</p>
+
+                <!-- Grid View for Package Requests -->
+                <div id="grid-view-package-requests" class="row g-4">
+                    {% for package_request in package_requests %}
+                    <div class="col-lg-6 mb-3">
+                        <div class="card itinerary-card h-100" style="border-left: 5px solid var(--accent-color);">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge" style="background-color: var(--accent-color);">Package Request</span>
+                                        <div class="text-center">
+                                            <div class="badge bg-primary">{{ package_request.preferred_date|date:"M d" }}</div>
+                                            <div class="small text-muted">Preferred date</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5 class="card-title mb-3">
+                                    <div class="route-info">
+                                        <div class="fw-bold">{{ package_request.origin }}</div>
+                                        <div class="route-separator">
+                                            <div class="route-icon">
+                                                <i class="bi bi-box"></i>
+                                            </div>
+                                        </div>
+                                        <div class="fw-bold">{{ package_request.destination }}</div>
+                                    </div>
+                                </h5>
+
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="traveler-avatar me-2">
+                                        {% if package_request.sender.profile_picture %}
+                                            <img src="{{ package_request.sender.profile_picture.url }}" alt="{{ package_request.sender.username }}">
+                                        {% else %}
+                                            {{ package_request.sender.username|slice:":1" }}
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ package_request.sender.username }}</div>
+                                        <div class="text-warning small">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= package_request.sender.average_rating|floatformat:"0" %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% elif forloop.counter <= package_request.sender.average_rating|add:"0.5"|floatformat:"0" %}
+                                                    <i class="bi bi-star-half"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <span class="text-muted ms-1">{{ package_request.sender.average_rating|floatformat:1 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row align-items-center">
+                                    <div class="col-7">
+                                        <div class="fw-medium mb-1">Package Details</div>
+                                        <p class="small text-muted mb-1">{{ package_request.package_weight }} kg - {{ package_request.package_dimensions }}</p>
+                                        <p class="small text-muted">{{ package_request.package_description|truncatechars:50 }}</p>
+                                    </div>
+                                    <div class="col-5 text-end">
+                                        <div class="text-muted small">Offered price</div>
+                                        <div class="fs-5 fw-bold" style="color: var(--accent-color)">${{ package_request.price_offer|floatformat:2 }}</div>
+                                        <a href="{% url 'package_request_detail' pk=package_request.pk %}" class="btn btn-sm btn-outline-primary mt-2 w-100">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- List View for Package Requests (hidden by default) -->
+                <div id="list-view-package-requests" class="mt-2" style="display: none;">
+                    <div class="table-view">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Route</th>
+                                        <th>Preferred Date</th>
+                                        <th>Sender</th>
+                                        <th>Package</th>
+                                        <th>Price</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for package_request in package_requests %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-medium">{{ package_request.origin }} to {{ package_request.destination }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="badge bg-primary">{{ package_request.preferred_date|date:"M d, Y" }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="traveler-avatar me-2" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                                                    {% if package_request.sender.profile_picture %}
+                                                        <img src="{{ package_request.sender.profile_picture.url }}" alt="{{ package_request.sender.username }}">
+                                                    {% else %}
+                                                        {{ package_request.sender.username|slice:":1" }}
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-medium">{{ package_request.sender.username }}</div>
+                                                    <div class="text-warning" style="font-size: 0.7rem; min-height: 16px; display: flex; align-items: center;">
+                                                        {% for i in "12345" %}
+                                                            {% if forloop.counter <= package_request.sender.average_rating|floatformat:"0" %}
+                                                                <i class="bi bi-star-fill"></i>
+                                                            {% elif forloop.counter <= package_request.sender.average_rating|add:"0.5"|floatformat:"0" %}
+                                                                <i class="bi bi-star-half"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-star"></i>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>{{ package_request.package_weight }} kg</div>
+                                            <div class="small text-muted">{{ package_request.package_dimensions }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold" style="color: var(--accent-color)">${{ package_request.price_offer|floatformat:2 }}</div>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'package_request_detail' pk=package_request.pk %}" class="btn btn-sm btn-outline-primary">
+                                                View Details
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <img src="/static/images/empty-search.svg" alt="No results" style="width: 150px; opacity: 0.6; margin-bottom: 2rem;" onerror="this.onerror=null; this.src=''; this.style.display='none';">
+                <div class="display-1 text-muted mb-3"><i class="bi bi-search"></i></div>
+                <h4>No itineraries found</h4>
+                <p class="text-muted">Try adjusting your search criteria or create a package request.</p>
+                <div class="mt-4">
+                    <a href="{% url 'create_package_request' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Create Package Request
+                    </a>
+                    <button onclick="window.history.back()" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-arrow-left me-2"></i>Go Back
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle between grid and list views
+        const gridViewBtn = document.getElementById('grid-view');
+        const listViewBtn = document.getElementById('list-view');
+        const gridViewContainer = document.getElementById('grid-view-container');
+        const listViewContainer = document.getElementById('list-view-container');
+
+        // Package Requests view elements
+        const gridViewPackageRequests = document.getElementById('grid-view-package-requests');
+        const listViewPackageRequests = document.getElementById('list-view-package-requests');
+
+        if (gridViewBtn && listViewBtn && gridViewContainer && listViewContainer) {
+            gridViewBtn.addEventListener('click', function() {
+                gridViewBtn.classList.add('active');
+                listViewBtn.classList.remove('active');
+                gridViewContainer.style.display = 'flex';
+                listViewContainer.style.display = 'none';
+
+                // Also update package requests view if they exist
+                if (gridViewPackageRequests && listViewPackageRequests) {
+                    gridViewPackageRequests.style.display = 'flex';
+                    listViewPackageRequests.style.display = 'none';
+                }
+
+                // Save preference to localStorage
+                localStorage.setItem('itineraryViewPreference', 'grid');
+            });
+
+            listViewBtn.addEventListener('click', function() {
+                listViewBtn.classList.add('active');
+                gridViewBtn.classList.remove('active');
+                listViewContainer.style.display = 'block';
+                gridViewContainer.style.display = 'none';
+
+                // Also update package requests view if they exist
+                if (gridViewPackageRequests && listViewPackageRequests) {
+                    gridViewPackageRequests.style.display = 'none';
+                    listViewPackageRequests.style.display = 'block';
+                }
+
+                // Save preference to localStorage
+                localStorage.setItem('itineraryViewPreference', 'list');
+            });
+
+            // Check if user has a saved preference
+            const savedViewPreference = localStorage.getItem('itineraryViewPreference');
+            if (savedViewPreference === 'list') {
+                listViewBtn.click();
+            }
+        }
+
+        // Filter functionality
+        const minCapacityInput = document.getElementById('min_capacity');
+        const maxCapacityInput = document.getElementById('max_capacity');
+        const minPriceInput = document.getElementById('min_price');
+        const maxPriceInput = document.getElementById('max_price');
+        const minRatingSelect = document.getElementById('min_rating');
+        const verifiedOnlyCheckbox = document.getElementById('verified_only');
+        const sortBySelect = document.getElementById('sort_by');
+        const applyFiltersBtn = document.getElementById('apply-filters');
+
+        // Hidden fields
+        const hiddenMinCapacity = document.getElementById('hidden_min_capacity');
+        const hiddenMaxCapacity = document.getElementById('hidden_max_capacity');
+        const hiddenMinPrice = document.getElementById('hidden_min_price');
+        const hiddenMaxPrice = document.getElementById('hidden_max_price');
+        const hiddenMinRating = document.getElementById('hidden_min_rating');
+        const hiddenVerifiedOnly = document.getElementById('hidden_verified_only');
+        const hiddenSortBy = document.getElementById('hidden_sort_by');
+
+        // Apply filters button
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', function() {
+                // Update hidden fields
+                if (minCapacityInput) hiddenMinCapacity.value = minCapacityInput.value;
+                if (maxCapacityInput) hiddenMaxCapacity.value = maxCapacityInput.value;
+                if (minPriceInput) hiddenMinPrice.value = minPriceInput.value;
+                if (maxPriceInput) hiddenMaxPrice.value = maxPriceInput.value;
+                if (minRatingSelect) hiddenMinRating.value = minRatingSelect.value;
+                if (verifiedOnlyCheckbox) hiddenVerifiedOnly.value = verifiedOnlyCheckbox.checked ? 'on' : '';
+                if (sortBySelect) hiddenSortBy.value = sortBySelect.value;
+
+                // Submit the form
+                document.getElementById('search-form').submit();
+            });
+        }
+
+        // Sort by change handler
+        if (sortBySelect) {
+            sortBySelect.addEventListener('change', function() {
+                hiddenSortBy.value = this.value;
+                document.getElementById('search-form').submit();
+            });
+        }
+
+        // Origin/destination swap button
+        const swapButton = document.getElementById('swap-locations');
+        if (swapButton) {
+            swapButton.addEventListener('click', function() {
+                const originInput = document.getElementById('id_origin');
+                const destinationInput = document.getElementById('id_destination');
+                const tempValue = originInput.value;
+                originInput.value = destinationInput.value;
+                destinationInput.value = tempValue;
+            });
+        }
+
+        // Make cards clickable (optional enhancement)
+        const itineraryCards = document.querySelectorAll('.itinerary-card');
+        itineraryCards.forEach(card => {
+            const detailLink = card.querySelector('a[href*="itinerary_detail"]') ||
+                               card.querySelector('a[href*="package_request_detail"]');
+            if (detailLink) {
+                const linkHref = detailLink.getAttribute('href');
+                card.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on another link or button
+                    if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' ||
+                        e.target.closest('a') || e.target.closest('button')) {
+                        return;
+                    }
+                    window.location.href = linkHref;
+                });
+                card.style.cursor = 'pointer';
+            }
+        });
+    });
+</script>
+{% endblock %}

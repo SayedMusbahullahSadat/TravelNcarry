@@ -1,0 +1,963 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}TravelNCarry - Ship Smarter, Travel Lighter{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Core variables */
+    :root {
+        --primary-color: #4361ee;
+        --accent-color: #f72585;
+        --secondary-color: #4cc9f0;
+        --tertiary-color: #7209b7;
+        --success-color: #4caf50;
+        --surface-card: #ffffff;
+        --border-radius-lg: 1.5rem;
+        --border-radius: 1rem;
+        --box-shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --box-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.12);
+        --text-muted: #6c757d;
+    }
+
+    /* Hero section with split design */
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+        background-color: #fff;
+        padding: 0;
+        margin-bottom: 5rem;
+    }
+
+    .hero-left {
+        position: relative;
+        padding: 6rem 3rem;
+        background-color: #f8f9fa;
+        border-radius: 0 0 100px 0;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .hero-left::before {
+        content: "";
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        top: -50%;
+        left: -50%;
+        z-index: -1;
+        background: linear-gradient(45deg, rgba(76, 201, 240, 0.1) 0%, rgba(247, 37, 133, 0.1) 100%);
+        transform: rotate(-3deg);
+    }
+
+    .hero-right {
+        position: relative;
+        padding: 6rem 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hero-headline {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        color: #212529;
+    }
+
+    .headline-highlight {
+        position: relative;
+        display: inline-block;
+        color: var(--accent-color);
+    }
+
+    .headline-highlight::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 0.5rem;
+        width: 100%;
+        background-color: rgba(247, 37, 133, 0.1);
+        z-index: -1;
+        border-radius: 3px;
+    }
+
+    .hero-description {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        color: var(--text-muted);
+    }
+
+    .hero-badge {
+        display: inline-block;
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 500;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    }
+
+    .hero-image-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hero-image {
+        max-width: 90%;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow-soft);
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-shape-1, .hero-shape-2, .hero-shape-3 {
+        position: absolute;
+        border-radius: 50%;
+        z-index: 1;
+    }
+
+    .hero-shape-1 {
+        width: 150px;
+        height: 150px;
+        top: 10%;
+        right: 5%;
+        background-color: rgba(247, 37, 133, 0.1);
+    }
+
+    .hero-shape-2 {
+        width: 100px;
+        height: 100px;
+        bottom: 15%;
+        left: 10%;
+        background-color: rgba(76, 201, 240, 0.1);
+    }
+
+    .hero-shape-3 {
+        width: 80px;
+        height: 80px;
+        top: 40%;
+        left: 20%;
+        background-color: rgba(114, 9, 183, 0.1);
+    }
+
+    /* Features section */
+    .section-heading {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #212529;
+    }
+
+    .section-title span {
+        color: var(--primary-color);
+    }
+
+    .section-description {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .feature-card {
+        background: var(--surface-card);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: none;
+        box-shadow: var(--box-shadow-soft);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--box-shadow-hover);
+    }
+
+    .feature-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background-color: var(--primary-color);
+    }
+
+    .feature-card.accent::before {
+        background-color: var(--accent-color);
+    }
+
+    .feature-card.secondary::before {
+        background-color: var(--secondary-color);
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 20px;
+    }
+
+    .feature-card:hover .feature-icon {
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    /* How it works section - Side by side columns */
+    .workflow-section {
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius-lg);
+        padding: 5rem 0;
+        margin: 5rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .workflow-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .workflow-header {
+        margin-bottom: 2rem;
+    }
+
+    .workflow-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .workflow-step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+    }
+
+    .step-number {
+        min-width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin-right: 1.5rem;
+        box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+    }
+
+    .step-number.accent {
+        background-color: var(--accent-color);
+        box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+    }
+
+    .step-content {
+        flex: 1;
+    }
+
+    .step-title {
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .step-description {
+        color: var(--text-muted);
+    }
+
+    .workflow-divider {
+        width: 1px;
+        background: linear-gradient(to bottom, transparent, var(--text-muted), transparent);
+        height: 100%;
+        margin: 0 auto;
+    }
+
+    /* Stats counter */
+    .stats-section {
+        margin: 6rem 0;
+    }
+
+    .counter-card {
+        background: var(--surface-card);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        text-align: center;
+        box-shadow: var(--box-shadow-soft);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        z-index: 1;
+    }
+
+    .counter-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 40%;
+        background: linear-gradient(to top, rgba(248, 249, 250, 0.8), transparent);
+        z-index: -1;
+    }
+
+    .counter-icon {
+        font-size: 2rem;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        position: relative;
+    }
+
+    .counter-icon::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: rgba(67, 97, 238, 0.1);
+    }
+
+    .counter-icon i {
+        color: var(--primary-color);
+    }
+
+    .counter-value {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+    }
+
+    .counter-label {
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    /* Testimonial section */
+    .testimonial-section {
+        margin: 6rem 0;
+    }
+
+    .testimonial-card {
+        background: var(--surface-card);
+        border-radius: var(--border-radius);
+        padding: 3rem 2rem 2rem;
+        position: relative;
+        box-shadow: var(--box-shadow-soft);
+        height: 100%;
+        margin: 1rem 0.5rem;
+    }
+
+    .testimonial-card::before {
+        content: """;
+        position: absolute;
+        top: 1rem;
+        left: 2rem;
+        font-size: 5rem;
+        line-height: 1;
+        color: #f0f0f0;
+        font-family: serif;
+    }
+
+    .testimonial-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        position: relative;
+        border: 3px solid white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .testimonial-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .testimonial-content {
+        font-style: italic;
+        color: var(--dark-gray);
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .testimonial-author {
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .testimonial-role {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .testimonial-rating {
+        margin-bottom: 1rem;
+    }
+
+    .testimonial-rating i {
+        color: #ffc107;
+    }
+
+    /* CTA section */
+    .cta-section {
+        background-color: var(--accent-color);
+        border-radius: var(--border-radius-lg);
+        padding: 5rem 0;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 5rem;
+    }
+
+    .cta-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.5;
+    }
+
+    .cta-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        color: white;
+    }
+
+    .cta-description {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 2rem;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .btn-light {
+        padding: 0.8rem 2rem;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-outline-light {
+        padding: 0.8rem 2rem;
+        font-weight: 600;
+        border-width: 2px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .delay-1 {
+        animation-delay: 0.2s;
+    }
+
+    .delay-2 {
+        animation-delay: 0.4s;
+    }
+
+    .delay-3 {
+        animation-delay: 0.6s;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .hero-left, .hero-right {
+            padding: 4rem 2rem;
+        }
+
+        .hero-headline {
+            font-size: 2.5rem;
+        }
+
+        .hero-left {
+            border-radius: 0;
+        }
+
+        .workflow-divider {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-left, .hero-right {
+            padding: 3rem 1.5rem;
+        }
+
+        .hero-headline {
+            font-size: 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .counter-value {
+            font-size: 2.5rem;
+        }
+
+        .cta-title {
+            font-size: 2rem;
+        }
+
+        .workflow-col {
+            margin-bottom: 3rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Split Design -->
+<section class="hero-section">
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Side Content -->
+            <div class="col-lg-6 hero-left">
+                <div class="hero-badge animate-fade-in-up">
+                    <i class="bi bi-stars me-2"></i>Peer-to-Peer Package Delivery
+                </div>
+                <h1 class="hero-headline animate-fade-in-up">
+                    Ship Your Packages with <span class="headline-highlight">Travelers</span> Going Your Way
+                </h1>
+                <p class="hero-description animate-fade-in-up delay-1">
+                    Connect with travelers who have spare luggage space to deliver your packages. Save money, reduce emissions, and build global connections.
+                </p>
+                <div class="d-flex gap-3 animate-fade-in-up delay-2">
+                    {% if user.is_authenticated %}
+                        {% if user.user_type == 'traveler' %}
+                            <a href="{% url 'itinerary_create' %}" class="btn btn-primary btn-lg">Create Itinerary</a>
+                        {% elif user.user_type == 'sender' %}
+                            <a href="{% url 'itinerary_list' %}" class="btn btn-primary btn-lg">Find a Traveler</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg">Get Started</a>
+                        <a href="#how-it-works" class="btn btn-outline-primary btn-lg">Learn More</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Side Image -->
+            <div class="col-lg-6 hero-right">
+                <div class="hero-image-container animate-fade-in-up delay-2">
+                    <div class="hero-shape-1"></div>
+                    <div class="hero-shape-2"></div>
+                    <div class="hero-shape-3"></div>
+                    <img src="{% static 'images/homepage/img.png' %}" alt="TravelNCarry platform preview" class="hero-image">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Counter Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="section-heading">
+            <h2 class="section-title">Trusted by <span>Thousands</span> Worldwide</h2>
+            <p class="section-description">Join our global community of travelers and senders</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="counter-card animate-fade-in-up">
+                    <div class="counter-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="counter-value">10,000+</div>
+                    <div class="counter-label">Active Users</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="counter-card animate-fade-in-up delay-1">
+                    <div class="counter-icon">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <div class="counter-value">150+</div>
+                    <div class="counter-label">Countries Served</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="counter-card animate-fade-in-up delay-2">
+                    <div class="counter-icon">
+                        <i class="bi bi-box-seam-fill"></i>
+                    </div>
+                    <div class="counter-value">25,000+</div>
+                    <div class="counter-label">Packages Delivered</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="counter-card animate-fade-in-up delay-3">
+                    <div class="counter-icon">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                    <div class="counter-value">$500K+</div>
+                    <div class="counter-label">Money Saved</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="section-heading">
+            <h2 class="section-title">Why Choose <span>TravelNCarry</span>?</h2>
+            <p class="section-description">Our platform offers unique advantages for both travelers and senders</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card animate-fade-in-up">
+                    <div class="feature-icon">
+                        <i class="bi bi-piggy-bank-fill text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Save Money</h4>
+                    <p class="text-muted mb-0">Senders save on shipping costs while travelers earn extra income by utilizing available luggage space.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card accent animate-fade-in-up delay-1">
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check text-danger"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Secure & Safe</h4>
+                    <p class="text-muted mb-0">Our verification system, escrow payments, and community reviews ensure safe and reliable deliveries.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card secondary animate-fade-in-up delay-2">
+                    <div class="feature-icon">
+                        <i class="bi bi-leaf-fill text-success"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Eco-Friendly</h4>
+                    <p class="text-muted mb-0">Reduce carbon footprint by utilizing existing travel routes instead of dedicated shipping methods.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section - Side by Side -->
+<section id="how-it-works" class="workflow-section">
+    <div class="container">
+        <div class="section-heading">
+            <h2 class="section-title">How <span>TravelNCarry</span> Works</h2>
+            <p class="section-description">Our simple process connects travelers and senders seamlessly</p>
+        </div>
+
+        <div class="row">
+            <!-- Travelers Column -->
+            <div class="col-md-5 workflow-col">
+                <div class="workflow-header">
+                    <h3 class="workflow-title">For Travelers</h3>
+                </div>
+
+                <div class="workflow-step animate-fade-in-up">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h5 class="step-title">Create Your Profile</h5>
+                        <p class="step-description">Sign up and complete your profile with verification details to build trust with potential senders.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step animate-fade-in-up delay-1">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h5 class="step-title">Post Your Itinerary</h5>
+                        <p class="step-description">Share your travel plans including dates, routes, and available luggage capacity for packages.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step animate-fade-in-up delay-2">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h5 class="step-title">Accept Bookings</h5>
+                        <p class="step-description">Review and accept package delivery requests from senders going your way.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step animate-fade-in-up delay-3">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h5 class="step-title">Deliver & Get Paid</h5>
+                        <p class="step-description">Deliver the package to the recipient and receive your payment through our secure escrow system.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Divider -->
+            <div class="col-md-2 d-none d-md-block">
+                <div class="workflow-divider h-100"></div>
+            </div>
+
+            <!-- Senders Column -->
+            <div class="col-md-5 workflow-col">
+                <div class="workflow-header">
+                    <h3 class="workflow-title">For Senders</h3>
+                </div>
+
+                <div class="workflow-step animate-fade-in-up">
+                    <div class="step-number accent">1</div>
+                    <div class="step-content">
+                        <h5 class="step-title">Create Your Profile</h5>
+                        <p class="step-description">Sign up and complete your profile to start finding travelers who can deliver your packages.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step animate-fade-in-up delay-1">
+                    <div class="step-number accent">2</div>
+                    <div class="step-content">
+                        <h5 class="step-title">Find a Traveler</h5>
+                        <p class="step-description">Search for travelers going to your destination or create a package request for travelers to find you.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step animate-fade-in-up delay-2">
+                    <div class="step-number accent">3</div>
+                    <div class="step-content">
+                        <h5 class="step-title">Book & Pay</h5>
+                        <p class="step-description">Book a traveler and make secure payment through our escrow system to protect your transaction.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step animate-fade-in-up delay-3">
+                    <div class="step-number accent">4</div>
+                    <div class="step-content">
+                        <h5 class="step-title">Receive Your Package</h5>
+                        <p class="step-description">Coordinate with the traveler for package delivery and release payment once successfully received.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonial-section">
+    <div class="container">
+        <div class="section-heading">
+            <h2 class="section-title">What Our <span>Users</span> Say</h2>
+            <p class="section-description">Hear from people who have experienced the TravelNCarry difference</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card animate-fade-in-up">
+                    <div class="testimonial-rating">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="testimonial-content">
+                        "I saved over $200 on shipping costs for my package from London to New York. The process was smooth and the traveler was incredibly professional."
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="testimonial-avatar">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div>
+                            <p class="testimonial-author mb-0">Sarah J.</p>
+                            <p class="testimonial-role mb-0">Sender, United Kingdom</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="testimonial-card animate-fade-in-up delay-1">
+                    <div class="testimonial-rating">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-half"></i>
+                    </div>
+                    <div class="testimonial-content">
+                        "As a frequent business traveler, TravelNCarry helps me earn extra income with my spare luggage space. The platform makes it easy to connect with senders."
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="testimonial-avatar">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div>
+                            <p class="testimonial-author mb-0">Michael T.</p>
+                            <p class="testimonial-role mb-0">Traveler, Canada</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="testimonial-card animate-fade-in-up delay-2">
+                    <div class="testimonial-rating">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="testimonial-content">
+                        "I needed to send a family heirloom to my sister overseas, and TravelNCarry connected me with a trustworthy traveler who delivered it safely and quickly."
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="testimonial-avatar">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div>
+                            <p class="testimonial-author mb-0">Elena R.</p>
+                            <p class="testimonial-role mb-0">Sender, Spain</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-background"></div>
+    <div class="container cta-content text-center">
+        <h2 class="cta-title animate-fade-in-up">Ready to Get Started?</h2>
+        <p class="cta-description animate-fade-in-up delay-1">Join thousands of users who are already saving money and helping each other through peer-to-peer package delivery.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap animate-fade-in-up delay-2">
+            {% if user.is_authenticated %}
+                {% if user.user_type == 'traveler' %}
+                    <a href="{% url 'itinerary_create' %}" class="btn btn-light btn-lg">Create Itinerary</a>
+                {% elif user.user_type == 'sender' %}
+                    <a href="{% url 'itinerary_list' %}" class="btn btn-light btn-lg">Find a Traveler</a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'account_signup' %}" class="btn btn-light btn-lg">Sign Up Now</a>
+                <a href="{% url 'account_login' %}" class="btn btn-outline-light btn-lg">Login</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate elements when they come into view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in-up');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.feature-card, .counter-card, .testimonial-card, .workflow-step').forEach(item => {
+            // Remove the animation class first (if added by default)
+            item.classList.remove('animate-fade-in-up');
+            observer.observe(item);
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

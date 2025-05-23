@@ -1,0 +1,329 @@
+<!-- templates/messaging/inbox.html -->
+{% extends 'base.html' %}
+
+{% block title %}Messages - FlyNCarry{% endblock %}
+
+{% block extra_css %}
+<style>
+    .messaging-container {
+        min-height: calc(100vh - 250px);
+    }
+
+    .inbox-card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        height: 100%;
+    }
+
+    .inbox-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .inbox-title {
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    .inbox-icon {
+        font-size: 1.25rem;
+        margin-right: 0.75rem;
+        color: var(--primary-color);
+    }
+
+    .inbox-count {
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50px;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.8rem;
+        margin-left: 0.75rem;
+    }
+
+    .conversation-list {
+        overflow-y: auto;
+        max-height: 70vh;
+    }
+
+    .conversation-item {
+        display: flex;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .conversation-item:last-child {
+        border-bottom: none;
+    }
+
+    .conversation-item:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .conversation-item.active {
+        background-color: rgba(67, 97, 238, 0.05);
+        border-left: 3px solid var(--primary-color);
+    }
+
+    .conversation-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        margin-right: 1rem;
+        position: relative;
+    }
+
+    .user-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-gray);
+        font-weight: 600;
+        font-size: 1.2rem;
+        overflow: hidden;
+    }
+
+    .conversation-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .conversation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.25rem;
+    }
+
+    .conversation-name {
+        font-weight: 600;
+        margin-bottom: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+
+    .conversation-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+        white-space: nowrap;
+    }
+
+    .conversation-preview {
+        color: #6c757d;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 220px;
+        font-size: 0.9rem;
+    }
+
+    .conversation-unread {
+        position: absolute;
+        top: 50%;
+        right: 1.5rem;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+    }
+
+    .unread-count {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 18px;
+        height: 18px;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    .no-conversations {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 1rem;
+        text-align: center;
+    }
+
+    .no-conversation-icon {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    .online-indicator {
+        position: absolute;
+        bottom: 3px;
+        right: 3px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #4caf50;
+        border: 2px solid white;
+    }
+
+    .search-box {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .search-input {
+        padding-left: 2.5rem;
+        border-radius: 50px;
+        border: 1px solid #ced4da;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+
+    .empty-state-image {
+        max-width: 200px;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row messaging-container">
+        <div class="col-md-12">
+            <div class="card inbox-card animate__animated animate__fadeIn">
+                <div class="inbox-header">
+                    <h4 class="inbox-title">
+                        <i class="bi bi-chat-square-text inbox-icon"></i>
+                        Messages
+                        {% if unread_count > 0 %}
+                            <span class="inbox-count">{{ unread_count }}</span>
+                        {% endif %}
+                    </h4>
+                    {% comment %}Placeholder for future features{% endcomment %}
+                    <div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" id="inboxOptionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="inboxOptionsDropdown">
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-check2-all me-2"></i>Mark all as read</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-funnel me-2"></i>Filter</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-sort-down me-2"></i>Sort</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="search-box p-3">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" class="form-control search-input" placeholder="Search messages...">
+                </div>
+
+                {% if conversations %}
+                    <div class="conversation-list">
+                        {% for conversation in conversations %}
+                            <a href="{% url 'conversation_detail' conversation_id=conversation.id %}" class="text-decoration-none text-reset {% if active_conversation == conversation.id %}active{% endif %}">
+                                <div class="conversation-item">
+                                    <div class="conversation-avatar">
+                                        {% if conversation.other_user.profile_picture %}
+                                            <img src="{{ conversation.other_user.profile_picture.url }}" alt="{{ conversation.other_user.username }}" class="user-avatar">
+                                        {% else %}
+                                            <div class="user-avatar">
+                                                {{ conversation.other_user.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                        {% if conversation.other_user.is_online %}
+                                            <div class="online-indicator"></div>
+                                        {% endif %}
+                                        {% if conversation.unread_count %}
+                                            <div class="unread-count">{{ conversation.unread_count }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="conversation-content">
+                                        <div class="conversation-header">
+                                            <h6 class="conversation-name">{{ conversation.other_user.username }}</h6>
+                                            <span class="conversation-time">{{ conversation.last_message_time|date:"M d" }}</span>
+                                        </div>
+                                        <p class="conversation-preview">
+                                            {% if conversation.last_message_content %}
+                                                {{ conversation.last_message_content }}
+                                            {% else %}
+                                                No messages yet
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-conversations">
+                        <div class="no-conversation-icon">
+                            <i class="bi bi-chat-left"></i>
+                        </div>
+                        <h5>No messages yet</h5>
+                        <p class="text-muted">Your conversations with travelers and senders will appear here. Start booking or message someone to begin.</p>
+                        {% if user.user_type == 'traveler' %}
+                            <a href="{% url 'itinerary_create' %}" class="btn btn-primary mt-3">
+                                <i class="bi bi-plus-circle me-2"></i>Create Itinerary
+                            </a>
+                        {% elif user.user_type == 'sender' %}
+                            <a href="{% url 'itinerary_list' %}" class="btn btn-primary mt-3">
+                                <i class="bi bi-search me-2"></i>Find Travelers
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simulate conversation filtering based on search
+        const searchInput = document.querySelector('.search-input');
+        const conversationItems = document.querySelectorAll('.conversation-item');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+
+            conversationItems.forEach(item => {
+                const username = item.querySelector('.conversation-name').textContent.toLowerCase();
+                const preview = item.querySelector('.conversation-preview').textContent.toLowerCase();
+
+                if (username.includes(searchTerm) || preview.includes(searchTerm)) {
+                    item.parentElement.style.display = 'block';
+                } else {
+                    item.parentElement.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

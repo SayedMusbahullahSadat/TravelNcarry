@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>Itinerary Details</h3>
+                        <div>
+                            {% if itinerary.status == 'active' %}
+                                <span class="badge bg-success">{{ itinerary.get_status_display }}</span>
+                            {% elif itinerary.status == 'completed' %}
+                                <span class="badge bg-info">{{ itinerary.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ itinerary.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-geo-alt"></i> Origin</h5>
+                            <p>{{ itinerary.origin }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-geo-alt-fill"></i> Destination</h5>
+                            <p>{{ itinerary.destination }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-calendar-event"></i> Departure</h5>
+                            <p>{{ itinerary.departure_date }} at {{ itinerary.departure_time }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-calendar-check"></i> Arrival</h5>
+                            <p>{{ itinerary.arrival_date }} at {{ itinerary.arrival_time }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-box"></i> Capacity</h5>
+                            <p>{{ itinerary.capacity_kg|floatformat:2 }} kg</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-box-seam"></i> Available Capacity</h5>
+                            <p>{{ itinerary.available_capacity|floatformat:2 }} kg</p>
+                        </div>
+                    </div>
+                    
+                    {% if itinerary.package_restrictions %}
+                        <div class="mb-3">
+                            <h5><i class="bi bi-exclamation-triangle"></i> Package Restrictions</h5>
+                            <p>{{ itinerary.package_restrictions }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    {% if user.is_authenticated and user == itinerary.traveler and itinerary.status == 'active' %}
+                        <div class="mt-4">
+                            <a href="{% url 'itinerary_update' pk=itinerary.pk %}" class="btn btn-primary">Edit Itinerary</a>
+                            <a href="{% url 'itinerary_delete' pk=itinerary.pk %}" class="btn btn-danger">Delete</a>
+                        </div>
+                    {% elif user.is_authenticated and user.user_type == 'sender' and itinerary.status == 'active' %}
+                        <div class="mt-4">
+                            <a href="{% url 'create_booking' itinerary_id=itinerary.pk %}" class="btn btn-success">Book This Itinerary</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Traveler Information</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if itinerary.traveler.profile_picture %}
+                            <img src="{{ itinerary.traveler.profile_picture.url }}" alt="Profile Picture" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                        {% else %}
+                            <div class="bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-0">{{ itinerary.traveler.username }}</h5>
+                            <div class="text-muted">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= itinerary.traveler.average_rating|floatformat:"0" %}
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    {% elif forloop.counter <= itinerary.traveler.average_rating|add:"0.5"|floatformat:"0" %}
+                                        <i class="bi bi-star-half text-warning"></i>
+                                    {% else %}
+                                        <i class="bi bi-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ms-1">{{ itinerary.traveler.average_rating|floatformat:1 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% if itinerary.traveler.is_verified %}
+                        <div class="mb-3">
+                            <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Verified User</span>
+                        </div>
+                    {% endif %}
+                    <a href="{% url 'profile_detail' pk=itinerary.traveler.pk %}" class="btn btn-outline-primary btn-sm">View Profile</a>
+                </div>
+            </div>
+
+            <!-- Bookings section will be added here when bookings are implemented -->
+            {% if user == itinerary.traveler %}
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Bookings</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if bookings %}
+                            <ul class="list-group list-group-flush">
+                                {% for booking in bookings %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p class="mb-1">{{ booking.sender.username }}</p>
+                                            <small class="text-muted">{{ booking.package_weight }} kg</small>
+                                        </div>
+                                        <div>
+                                            {% if booking.status == 'pending' %}
+                                                <span class="badge bg-warning">{{ booking.get_status_display }}</span>
+                                            {% elif booking.status == 'confirmed' %}
+                                                <span class="badge bg-primary">{{ booking.get_status_display }}</span>
+                                            {% elif booking.status == 'in_transit' %}
+                                                <span class="badge bg-info">{{ booking.get_status_display }}</span>
+                                            {% elif booking.status == 'delivered' %}
+                                                <span class="badge bg-success">{{ booking.get_status_display }}</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ booking.get_status_display }}</span>
+                                            {% endif %}
+                                            <a href="{% url 'booking_detail' pk=booking.pk %}" class="btn btn-sm btn-outline-primary ms-2">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No bookings yet for this itinerary.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

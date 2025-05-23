@@ -1,0 +1,95 @@
+<!-- templates/admin_dashboard/dispute_detail.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Dispute Details</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'admin_dispute_list' %}" class="btn btn-primary">Back to Disputes</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ dispute.subject }}</h5>
+                    <span>
+                        {% if dispute.status == 'open' %}
+                            <span class="badge bg-danger">{{ dispute.get_status_display }}</span>
+                        {% elif dispute.status == 'in_progress' %}
+                            <span class="badge bg-warning">{{ dispute.get_status_display }}</span>
+                        {% elif dispute.status == 'resolved' %}
+                            <span class="badge bg-success">{{ dispute.get_status_display }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ dispute.get_status_display }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Description</h6>
+                        <p>{{ dispute.description }}</p>
+                    </div>
+
+                    {% if dispute.resolution %}
+                        <div class="mb-4">
+                            <h6>Resolution</h6>
+                            <p>{{ dispute.resolution }}</p>
+                        </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <h6>Update Dispute</h6>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-primary">Update Dispute</button>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <span>Created: {{ dispute.created_at|date:"F j, Y, g:i a" }}</span>
+                        <span>Updated: {{ dispute.updated_at|date:"F j, Y, g:i a" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Dispute Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Created By:</strong> {{ dispute.created_by.username }}</p>
+                    <p><strong>Assigned To:</strong> {{ dispute.assigned_to.username|default:"Not assigned" }}</p>
+                    <p><strong>Related Booking:</strong> {{ dispute.booking.id|truncatechars:8 }}</p>
+                    <p><strong>Booking Status:</strong> {{ dispute.booking.get_status_display }}</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Involved Parties</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Sender</h6>
+                        <p>{{ dispute.booking.sender.username }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Traveler</h6>
+                        <p>{{ dispute.booking.itinerary.traveler.username }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+<!-- templates/itineraries/saved_searches.html -->
+{% extends 'base.html' %}
+
+{% block title %}Saved Searches - FlyNCarry{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-bookmark me-2"></i>Your Saved Searches</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'itinerary_list' %}" class="btn btn-primary">
+                <i class="bi bi-search me-2"></i>Back to Search
+            </a>
+        </div>
+    </div>
+
+    {% if searches %}
+        <div class="row">
+            {% for search in searches %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 animate__animated animate__fadeIn">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{{ search.name }}</h5>
+                            <span class="badge bg-primary">{{ search.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                {% if search.notify %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-bell-fill me-1"></i> Notifications On
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {% if search.origin or search.destination %}
+                                    <div class="mb-2">
+                                        {% if search.origin %}
+                                            <span class="badge bg-light text-dark me-2">From: {{ search.origin }}</span>
+                                        {% endif %}
+                                        {% if search.destination %}
+                                            <span class="badge bg-light text-dark me-2">To: {{ search.destination }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                {% if search.departure_date_from or search.departure_date_to %}
+                                    <div class="mb-2">
+                                        {% if search.departure_date_from %}
+                                            <span class="badge bg-light text-dark me-2">From: {{ search.departure_date_from|date:"M d, Y" }}</span>
+                                        {% endif %}
+                                        {% if search.departure_date_to %}
+                                            <span class="badge bg-light text-dark me-2">To: {{ search.departure_date_to|date:"M d, Y" }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                {% if search.min_capacity or search.max_capacity %}
+                                    <div class="mb-2">
+                                        {% if search.min_capacity %}
+                                            <span class="badge bg-light text-dark me-2">Min Capacity: {{ search.min_capacity }} kg</span>
+                                        {% endif %}
+                                        {% if search.max_capacity %}
+                                            <span class="badge bg-light text-dark me-2">Max Capacity: {{ search.max_capacity }} kg</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                {% if search.min_price or search.max_price %}
+                                    <div class="mb-2">
+                                        {% if search.min_price %}
+                                            <span class="badge bg-light text-dark me-2">Min Price: ${{ search.min_price }}</span>
+                                        {% endif %}
+                                        {% if search.max_price %}
+                                            <span class="badge bg-light text-dark me-2">Max Price: ${{ search.max_price }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                {% if search.min_rating %}
+                                    <div class="mb-2">
+                                        <span class="badge bg-light text-dark me-2">
+                                            Min Rating: {{ search.min_rating }}
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        </span>
+                                    </div>
+                                {% endif %}
+
+                                {% if search.verified_only %}
+                                    <div class="mb-2">
+                                        <span class="badge bg-light text-dark me-2">
+                                            <i class="bi bi-patch-check-fill text-primary me-1"></i> Verified Only
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            <a href="{{ search.get_search_url }}" class="btn btn-primary">
+                                <i class="bi bi-search me-2"></i>Run Search
+                            </a>
+                            <a href="{% url 'delete_saved_search' search_id=search.id %}" class="btn btn-outline-danger">
+                                <i class="bi bi-trash me-2"></i>Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i> You don't have any saved searches yet.
+            <a href="{% url 'itinerary_list' %}" class="alert-link">Search for itineraries</a> and save your search criteria for future use.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Accept Package Request - TravelNCarry{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Accept Package Request</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="bi bi-info-circle me-2"></i>Package Request Details</h5>
+                        <p><strong>From:</strong> {{ package_request.origin }} <strong>To:</strong> {{ package_request.destination }}</p>
+                        <p><strong>Preferred Date:</strong> {{ package_request.preferred_date }}</p>
+                        <p><strong>Package Weight:</strong> {{ package_request.package_weight }} kg</p>
+                        <p><strong>Package Dimensions:</strong> {{ package_request.package_dimensions }}</p>
+                        <p><strong>Offered Price:</strong> ${{ package_request.price_offer }}</p>
+                        <p><strong>Description:</strong> {{ package_request.package_description }}</p>
+                        {% if package_request.special_instructions %}
+                            <p><strong>Special Instructions:</strong> {{ package_request.special_instructions }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Complete Your Itinerary Details</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Departure Time</label>
+                                <input type="time" name="departure_time" class="form-control" value="12:00" required>
+                                <div class="form-text">Time you plan to depart on {{ package_request.preferred_date }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Arrival Date</label>
+                                <input type="date" name="arrival_date" class="form-control" 
+                                       value="{{ package_request.preferred_date|date:'Y-m-d' }}" min="{{ package_request.preferred_date|date:'Y-m-d' }}">
+                                <div class="form-text">Leave empty if same day as departure</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Arrival Time</label>
+                                <input type="time" name="arrival_time" class="form-control" value="12:00" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Total Capacity (kg)</label>
+                                <input type="number" name="capacity_kg" class="form-control" 
+                                       min="{{ package_request.package_weight }}" step="0.5" 
+                                       value="{{ package_request.package_weight }}" required>
+                                <div class="form-text">Must be at least the package weight ({{ package_request.package_weight }} kg)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            By accepting this request, you agree to carry this package as described. An itinerary will be created for you
+                            with these details, and a booking will be automatically confirmed.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'package_request_detail' pk=package_request.pk %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Back
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-2"></i>Accept and Create Itinerary
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

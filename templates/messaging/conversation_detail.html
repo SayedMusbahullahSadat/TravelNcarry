@@ -1,0 +1,614 @@
+<!-- templates/messaging/conversation_detail.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Conversation with {{ other_user.username }} - FlyNCarry{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Container layout */
+    .conversation-container {
+        min-height: calc(100vh - 200px);
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Chat card */
+    .chat-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
+    }
+
+    /* Header styling */
+    .chat-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* User info in header */
+    .user-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-gray);
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-right: 1rem;
+        position: relative;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .online-indicator {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #4caf50;
+        border: 2px solid white;
+    }
+
+    .user-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: #333;
+    }
+
+    .user-status {
+        font-size: 0.8rem;
+        color: #4caf50;
+    }
+
+    /* Chat body - message area */
+    .chat-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        max-height: 65vh;
+    }
+
+    /* Message containers */
+    .message-container {
+        display: flex;
+        margin-bottom: 1rem;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .message-container.outgoing {
+        justify-content: flex-end;
+    }
+
+    /* Message bubbles */
+    .message {
+        max-width: 75%;
+        padding: 0.75rem 1rem;
+        border-radius: 18px;
+        position: relative;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .message.incoming {
+        background-color: white;
+        border-bottom-left-radius: 4px;
+        margin-right: auto;
+    }
+
+    .message.outgoing {
+        background-color: #4361ee;
+        color: white;
+        border-bottom-right-radius: 4px;
+        margin-left: auto;
+    }
+
+    /* Message content */
+    .message-content {
+        word-wrap: break-word;
+        white-space: pre-line;
+        line-height: 1.4;
+    }
+
+    /* Message timestamp */
+    .message-time {
+        display: block;
+        font-size: 0.65rem;
+        margin-top: 0.4rem;
+        text-align: right;
+        opacity: 0.7;
+    }
+
+    /* Message read status */
+    .message-status {
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-top: 0.25rem;
+    }
+
+    /* Avatar for incoming messages */
+    .message-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-gray);
+        font-weight: 600;
+        font-size: 0.8rem;
+        margin-right: 0.75rem;
+        align-self: flex-end;
+    }
+
+    /* Date dividers */
+    .date-divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        position: relative;
+    }
+
+    .date-divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: #dee2e6;
+        z-index: 1;
+    }
+
+    .date-divider span {
+        background-color: #f8f9fa;
+        padding: 0 1rem;
+        position: relative;
+        z-index: 2;
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-weight: 500;
+        border-radius: 12px;
+    }
+
+    /* Chat footer - input area */
+    .chat-footer {
+        padding: 1rem 1.5rem;
+        background-color: white;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Message form */
+    .message-form {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    /* Message input */
+    .message-input {
+        flex: 1;
+        resize: none;
+        border-radius: 24px;
+        padding: 0.8rem 1.2rem;
+        max-height: 120px;
+        overflow-y: auto;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .message-input:focus {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    /* Send button */
+    .send-button {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 0.75rem;
+        background-color: #4361ee;
+        color: white;
+        border: none;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 5px rgba(67, 97, 238, 0.3);
+    }
+
+    .send-button:hover {
+        background-color: #3a56d4;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+    }
+
+    .send-button:disabled {
+        background-color: #e0e0e0;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+    /* Attachment button */
+    .attachment-button {
+        background: none;
+        border: none;
+        color: #6c757d;
+        font-size: 1.2rem;
+        margin-right: 0.75rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem;
+        cursor: pointer;
+        opacity: 0.7;
+    }
+
+    .attachment-button:hover {
+        color: #4361ee;
+        opacity: 1;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin: 0.5rem 0 0 1rem;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .typing-dots {
+        display: flex;
+        align-items: center;
+        margin-left: 0.5rem;
+    }
+
+    .typing-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background-color: #6c757d;
+        margin-right: 3px;
+        animation: typingAnimation 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) {
+        animation-delay: 0s;
+    }
+
+    .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes typingAnimation {
+        0%, 80%, 100% {
+            transform: scale(0.5);
+            opacity: 0.5;
+        }
+        40% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* Back button */
+    .back-button {
+        display: flex;
+        align-items: center;
+        color: var(--dark-gray);
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        padding: 0.5rem;
+        border-radius: 50%;
+    }
+
+    .back-button:hover {
+        color: #4361ee;
+        background-color: rgba(67, 97, 238, 0.05);
+    }
+
+    .back-icon {
+        margin-right: 0.5rem;
+    }
+
+    /* Empty state - no messages */
+    .no-messages {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .no-messages-icon {
+        font-size: 3.5rem;
+        color: #dee2e6;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Action buttons */
+    .action-btn {
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .chat-body {
+            max-height: 58vh;
+            padding: 1rem;
+        }
+
+        .message {
+            max-width: 85%;
+        }
+
+        .chat-header {
+            padding: 0.75rem 1rem;
+        }
+
+        .chat-footer {
+            padding: 0.75rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row conversation-container">
+        <div class="col-md-12">
+            <div class="chat-card animate__animated animate__fadeIn">
+                <div class="chat-header">
+                    <div class="user-info">
+                        <a href="{% url 'inbox' %}" class="back-button">
+                            <i class="bi bi-arrow-left back-icon"></i>
+                        </a>
+                        <div class="user-avatar">
+                            {% if other_user.profile_picture %}
+                                <img src="{{ other_user.profile_picture.url }}" alt="{{ other_user.username }}">
+                            {% else %}
+                                {{ other_user.username|slice:":1" }}
+                            {% endif %}
+                            {% if other_user.is_online %}
+                                <div class="online-indicator"></div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="user-name">{{ other_user.username }}</div>
+                            <div class="user-status">
+                                {% if other_user.is_online %}
+                                    <i class="bi bi-circle-fill me-1"></i> Online
+                                {% else %}
+                                    Last seen {{ other_user.last_login|timeuntil }} ago
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <a href="{% url 'profile_detail' pk=other_user.pk %}" class="btn btn-outline-primary btn-sm action-btn me-2">
+                            <i class="bi bi-person me-1"></i>
+                            <span class="d-none d-md-inline">Profile</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="chat-body" class="chat-body">
+                    {% if conversation_messages %}
+                        {% with current_day=None %}
+                            {% for message in conversation_messages %}
+                                {% if message.sent_at.date|date:"Y-m-d" != current_day %}
+                                    <div class="date-divider">
+                                        <span>
+                                            {% now "Y-m-d" as today %}
+                                            {% if message.sent_at.date|date:"Y-m-d" == today %}
+                                                Today
+                                            {% else %}
+                                                {{ message.sent_at|date:"F j, Y" }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% with current_day=message.sent_at.date|date:"Y-m-d" %}{% endwith %}
+                                {% endif %}
+
+                                <div class="message-container {% if message.sender == request.user %}outgoing{% else %}incoming{% endif %}">
+                                    {% if message.sender != request.user %}
+                                        <div class="message-avatar">
+                                            {% if message.sender.profile_picture %}
+                                                <img src="{{ message.sender.profile_picture.url }}" alt="{{ message.sender.username }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                            {% else %}
+                                                {{ message.sender.username|slice:":1" }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="message {% if message.sender == request.user %}outgoing{% else %}incoming{% endif %}">
+                                        <div class="message-content">{{ message.content }}</div>
+                                        <div class="message-time">
+                                            {{ message.sent_at|date:"g:i A" }}
+                                            {% if message.sender == request.user %}
+                                                {% if message.is_read %}
+                                                    <i class="bi bi-check2-all ms-1"></i>
+                                                {% else %}
+                                                    <i class="bi bi-check2 ms-1"></i>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endwith %}
+                    {% else %}
+                        <div class="no-messages">
+                            <div class="no-messages-icon">
+                                <i class="bi bi-chat-square-text"></i>
+                            </div>
+                            <h5>No messages yet</h5>
+                            <p>Start the conversation by sending a message below.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="chat-footer">
+                    <form method="post" class="message-form" id="message-form">
+                        {% csrf_token %}
+                        <button type="button" class="attachment-button" disabled>
+                            <i class="bi bi-paperclip"></i>
+                        </button>
+                        <div class="flex-grow-1">
+                            {{ form.content|as_crispy_field }}
+                            <div class="typing-indicator d-none" id="typing-indicator">
+                                <span>{{ other_user.username }} is typing</span>
+                                <div class="typing-dots">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="send-button" id="send-button" disabled>
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatBody = document.getElementById('chat-body');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('id_content');
+        const sendButton = document.getElementById('send-button');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        // Scroll to bottom of messages
+        scrollToBottom();
+
+        // Enable/disable send button based on message content
+        messageInput.addEventListener('input', function() {
+            sendButton.disabled = this.value.trim() === '';
+
+            // Simulate typing indicator
+            if (Math.random() > 0.7 && this.value.trim() !== '') {
+                showTypingIndicator();
+            }
+        });
+
+        // Handle form submission
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (messageInput.value.trim() === '') {
+                return;
+            }
+
+            // Submit the form normally
+            this.submit();
+        });
+
+        // Autoresize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        function scrollToBottom() {
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            // Only show typing indicator if there are messages already
+            if (document.querySelector('.message')) {
+                typingIndicator.classList.remove('d-none');
+
+                setTimeout(() => {
+                    typingIndicator.classList.add('d-none');
+                }, 2000 + Math.random() * 1000);
+            }
+        }
+
+        // Mark messages as read when user scrolls to them
+        const messages = document.querySelectorAll('.message.incoming');
+        if (messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Mark message as read
+                        console.log('Message is visible');
+                    }
+                });
+            });
+
+            observer.observe(lastMessage);
+        }
+
+        // Focus input on page load
+        messageInput.focus();
+    });
+</script>
+{% endblock %}

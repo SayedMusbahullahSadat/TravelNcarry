@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Package Requests</h2>
+        {% if user.user_type == 'sender' %}
+            <a href="{% url 'create_package_request' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Create New Request
+            </a>
+        {% endif %}
+    </div>
+    
+    {% if package_requests %}
+        <div class="row">
+            {% for package_request in package_requests %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{{ package_request.origin }} to {{ package_request.destination }}</h5>
+                            <div>
+                                {% if package_request.status == 'open' %}
+                                    <span class="badge bg-success">{{ package_request.get_status_display }}</span>
+                                {% elif package_request.status == 'accepted' %}
+                                    <span class="badge bg-primary">{{ package_request.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ package_request.get_status_display }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Preferred Date:</strong> {{ package_request.preferred_date }}</p>
+                            <p><strong>Package:</strong> {{ package_request.package_weight }} kg, {{ package_request.package_dimensions }}</p>
+                            <p><strong>Price Offer:</strong> ${{ package_request.price_offer }}</p>
+                            {% if user.user_type == 'traveler' %}
+                                <p><strong>Sender:</strong> {{ package_request.sender.username }}</p>
+                            {% endif %}
+                            <a href="{% url 'package_request_detail' pk=package_request.pk %}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            {% if user.user_type == 'sender' %}
+                You haven't created any package requests yet. <a href="{% url 'create_package_request' %}" class="alert-link">Create one now</a>.
+            {% else %}
+                There are no open package requests at this time.
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

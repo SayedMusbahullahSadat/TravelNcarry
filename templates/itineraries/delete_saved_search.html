@@ -1,0 +1,37 @@
+<!-- templates/itineraries/delete_saved_search.html -->
+{% extends 'base.html' %}
+
+{% block title %}Delete Saved Search - FlyNCarry{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Delete Saved Search</h3>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to delete the saved search "{{ search.name }}"?</p>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i> This action cannot be undone.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{% url 'saved_searches' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-2"></i>Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,175 @@
+<!-- templates/admin_dashboard/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Admin Dashboard</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <a href="{% url 'admin_user_management' %}" class="btn btn-outline-primary">Users</a>
+                <a href="{% url 'admin_dispute_list' %}" class="btn btn-outline-primary">Disputes</a>
+                <a href="{% url 'admin_system_settings' %}" class="btn btn-outline-primary">Settings</a>
+                <a href="{% url 'admin_reports' %}" class="btn btn-outline-primary">Reports</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Users</h5>
+                    <h1 class="display-4">{{ total_users }}</h1>
+                    <p class="card-text">
+                        {{ total_travelers }} travelers<br>
+                        {{ total_senders }} senders
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'admin_user_management' %}" class="btn btn-sm btn-primary">Manage Users</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Itineraries</h5>
+                    <h1 class="display-4">{{ total_itineraries }}</h1>
+                    <p class="card-text">
+                        {{ active_itineraries }} active
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="btn btn-sm btn-primary">View All</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Bookings</h5>
+                    <h1 class="display-4">{{ total_bookings }}</h1>
+                    <p class="card-text">
+                        {{ pending_bookings }} pending<br>
+                        {{ completed_bookings }} completed
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="btn btn-sm btn-primary">View All</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Payments</h5>
+                    <h1 class="display-4">${{ total_payments }}</h1>
+                    <p class="card-text">
+                        Total processed amount
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'admin_reports' %}" class="btn btn-sm btn-primary">View Reports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for user in recent_users %}
+                            <a href="{% url 'admin_user_detail' user_id=user.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ user.username }}</h6>
+                                    <small>{{ user.date_joined|date:"M d, Y" }}</small>
+                                </div>
+                                <small>{{ user.get_user_type_display }}</small>
+                            </a>
+                        {% empty %}
+                            <p class="text-muted">No users found.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'admin_user_management' %}" class="btn btn-sm btn-primary">View All Users</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Disputes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for dispute in recent_disputes %}
+                            <a href="{% url 'admin_dispute_detail' dispute_id=dispute.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ dispute.subject }}</h6>
+                                    <small>{{ dispute.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                <small>
+                                    {% if dispute.status == 'open' %}
+                                        <span class="badge bg-danger">{{ dispute.get_status_display }}</span>
+                                    {% elif dispute.status == 'in_progress' %}
+                                        <span class="badge bg-warning">{{ dispute.get_status_display }}</span>
+                                    {% elif dispute.status == 'resolved' %}
+                                        <span class="badge bg-success">{{ dispute.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ dispute.get_status_display }}</span>
+                                    {% endif %}
+                                    Created by {{ dispute.created_by.username }}
+                                </small>
+                            </a>
+                        {% empty %}
+                            <p class="text-muted">No disputes found.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'admin_dispute_list' %}" class="btn btn-sm btn-primary">View All Disputes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">System Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>Base Price per kg:</strong> ${{ settings.base_price_per_kg }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Platform Fee:</strong> {{ settings.platform_fee_percentage }}%</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Last Updated:</strong> {{ settings.updated_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'admin_system_settings' %}" class="btn btn-sm btn-primary">Manage Settings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
